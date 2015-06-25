@@ -16,7 +16,12 @@
 
 #define INFTO 1123456789
 #define isvalid(X) (((X) != NIL) && ((X) != NULL))
-#define VERIFICA_PROPRIEDADES
+//#define VERIFICA_PROPRIEDADES
+
+#define ERR_SYNTAX() fprintf(stderr, "ERROR: Invalid syntax\n")
+#define ERR_NO_NODE() fprintf(stderr, "ERROR: Tried to remove inexistent node\n")
+#define ERR_DUP_NODE() fprintf(stderr, "ERROR: No duplicate nodes allowed\n")
+#define ERR_ALLOC() { fprintf(stderr, "FATAL: Could not allocate memory\n"); exit(1); }
 
 using namespace std;
 
@@ -45,6 +50,8 @@ struct Tree{
 	
 	node aloca(int v) {
 		node N = new (nothrow) nodo;
+		if(N == NULL)
+			ERR_ALLOC();
 		N->p = NIL;
 		N->l = N->r = NIL;
 		N->k = v;
@@ -84,7 +91,7 @@ struct Tree{
 	}
 	
 #ifdef VERIFICA_PROPRIEDADES
-	void rb_fixup(node *T, node z){
+	void insert_fixup(node *T, node z){
 		// iterate until z is not the T and z's p c is red
 		while (z != *T && z->p->c == RED){
 			node y;
@@ -254,14 +261,22 @@ struct Tree{
 		root = insere(root, v);	
 #ifdef VERIFICA_PROPRIEDADES		
 		node z = search(v);
-		rb_fixup(&root, z);
+		insert_fixup(&root, z);
 #endif
 	}
 	
 	void pop(int v){ 
-		node aux = (search(v))->p;
+#ifdef VERIFICA_PROPRIEDADES	
+		node aux = search(v);
+		if(aux == NULL){
+			ERR_NO_NODE();
+			return;
+		}
+#endif	
 		root = retira(root, v);
-		rb_fixup(&root, aux);
+#ifdef VERIFICA_PROPRIEDADES
+		//insert_fixup(&root, aux->p);
+#endif
 	}
 	void clear(){ libera(root); delete NIL; }
 	
@@ -306,6 +321,31 @@ struct Tree{
 		if (!ant) puts("");
 	}
 	
+	void print_info_util(node n){
+		if(n == NULL){
+			printf("NULL");
+			return;
+		}
+		printf((n == NIL) 
+			? ANSI_BG_BLACK "NIL" 
+			: "%s%d", (n->c ? ANSI_BG_RED : ANSI_BG_BLACK), n->k);
+		puts(ANSI_COLOR_RESET);
+	}
+	
+	void print_info(node n){
+		if(n == NULL){
+			puts("Node does not exist.");
+			return;
+		}
+		printf("Parent: ");
+		print_info_util(n->p);
+		printf("Key: ");
+		print_info_util(n);
+		printf("Left: ");
+		print_info_util(n->l);
+		printf("Right: ");
+		print_info_util(n->r);
+	}
 };
 
 void strcaps(char *s){
@@ -355,6 +395,14 @@ int main(void){
 			scanf("%d", &v);
 			T.push(v);
 		}else
+		if(eq(op,"RAND")){
+			//int b, e;
+			scanf("%d", &v);
+			//scanf("%d %d", &b, &e);
+			for(int it = 0; it < v; it++){
+				T.push(rand() % INFTO);
+			}
+		}else
 		
 		if(eq(op,"INFIXA")) { T.inorder(); printf("\n"); }else
 		if(eq(op,"PREFIXA")){ T.preorder(); printf("\n"); }else
@@ -375,8 +423,13 @@ int main(void){
 		}else
 		if(eq(op,"M")){
 			T.mostra(T.root, 0, 0);
+		}else
+		if(eq(op,"INFO")){
+			scanf("%d", &v);
+			T.print_info(T.search(v));
+			putchar('\n');
 		}else{
-			fprintf(stderr, "ERROR: Invalid syntax\n");
+			ERR_SYNTAX();
 		}
 		
 #ifdef GUI
