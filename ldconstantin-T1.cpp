@@ -16,7 +16,7 @@
 
 #define INFTO 1123456789
 #define isvalid(X) (((X) != NIL) && ((X) != NULL))
-//#define VERIFICA_PROPRIEDADES
+#define RB_BALANCE
 
 #define ERR_SYNTAX() fprintf(stderr, "ERROR: Invalid syntax\n")
 #define ERR_NO_NODE() fprintf(stderr, "ERROR: Tried to remove inexistent node\n")
@@ -90,7 +90,7 @@ struct Tree{
 		y->p = x;
 	}
 	
-#ifdef VERIFICA_PROPRIEDADES
+#ifdef RB_BALANCE
 	void insert_fixup(node *T, node z){
 		// iterate until z is not the T and z's p c is red
 		while (z != *T && z->p->c == RED){
@@ -160,7 +160,7 @@ struct Tree{
 		}
 		(*T)->c = BLACK; //keep T always black
 	}
-#endif // VERIFICA_PROPRIEDADES;
+#endif // RB_BALANCE;
 
 	node insere (node T, int v) {
 		if(T == NIL){
@@ -259,14 +259,14 @@ struct Tree{
 	
 	void push(int v){ 
 		root = insere(root, v);	
-#ifdef VERIFICA_PROPRIEDADES		
+#ifdef RB_BALANCE		
 		node z = search(v);
 		insert_fixup(&root, z);
 #endif
 	}
 	
 	void pop(int v){ 
-#ifdef VERIFICA_PROPRIEDADES	
+#ifdef RB_BALANCE	
 		node aux = search(v);
 		if(aux == NULL){
 			ERR_NO_NODE();
@@ -274,7 +274,7 @@ struct Tree{
 		}
 #endif	
 		root = retira(root, v);
-#ifdef VERIFICA_PROPRIEDADES
+#ifdef RB_BALANCE
 		//insert_fixup(&root, aux->p);
 #endif
 	}
@@ -418,8 +418,11 @@ int main(void){
 		}else
 		if(eq(op,"ROTATE")){
 			scanf("%d %d", &v, &rt);
-			rt ? T.rightRotate(&(T.root), T.search(v))
-				: T.leftRotate(&(T.root), T.search(v));
+			node aux = T.search(v);
+			if(aux){
+				rt ? T.rightRotate(&(T.root), aux)
+				: T.leftRotate(&(T.root), aux);
+			}
 		}else
 		if(eq(op,"M")){
 			T.mostra(T.root, 0, 0);
