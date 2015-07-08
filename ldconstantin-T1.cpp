@@ -199,8 +199,7 @@ struct Tree{
 
 	node retira(node T, int v) {
 		if(T == NIL) return T;
-		else if(v < T->k) T->s[0] = retira(T->s[0], v);
-		else if(v > T->k) T->s[1] = retira(T->s[1], v);
+		else if(v != T->k) T->s[v > T->k] = retira(T->s[v > T->k], v);
 		else{
 			if(T->s[0] == NIL && T->s[1] == NIL){ // no child
 				delete T;
