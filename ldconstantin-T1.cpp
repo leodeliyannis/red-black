@@ -42,9 +42,7 @@ struct Tree{
 	node procura(node T, int v){
 		if(T == NIL) return NULL;
 		if(v == T->k) return T;
-		if(v < T->k) return procura(T->s[0], v);
-		if(v > T->k) return procura(T->s[1], v);
-		return NULL;
+		return procura(T->s[v > T->k], v);
 	}
 	
 	node aloca(int v) {
@@ -164,22 +162,12 @@ struct Tree{
 		if(T == NIL){
 			T = aloca(v);
 			T->c = BLACK;
-		}else{
-			if (v < T->k) {
-				if(T->s[0] != NIL) 
-					insere(T->s[0], v);
-				else{
-					T->s[0] = aloca(v);
-					T->s[0]->p = T;
-				}
-			}else
-			if (T->k < v) {
-				if(T->s[1] != NIL)
-					insere(T->s[1], v);
-				else{
-					T->s[1] = aloca(v);
-					T->s[1]->p = T;
-				}
+		}else if(T->k != v){
+			if(T->s[v > T->k] != NIL)
+				insere(T->s[v > T->k], v);
+			else{
+				T->s[v > T->k] = aloca(v);
+				T->s[v > T->k]->p = T;
 			}
 		}
 		return T;
