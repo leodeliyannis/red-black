@@ -30,7 +30,6 @@ struct nodo{
 	nodo *p, *l, *r;
 	int k;
 	color c;
-	bool isnil;
 };
 typedef nodo* node;
 
@@ -56,7 +55,6 @@ struct Tree{
 		N->l = N->r = NIL;
 		N->k = v;
 		N->c = RED;
-		N->isnil = false;
 		return N;
 	}
 	
@@ -134,7 +132,7 @@ struct Tree{
 					leftRotate(T,z->p);
 					rightRotate(T,z->p->p);
 				}
-	 
+				
 				// Right-Right (RR) case, do following
 				// (i)  Swap c of p and grandparent
 				// (ii) Left Rotate Grandparent
@@ -247,7 +245,6 @@ struct Tree{
 		NIL = aloca(-INFTO);
 		NIL->p = NIL->l = NIL->r = NULL;
 		NIL->c = BLACK;
-		NIL->isnil = true;
 		root = NIL;
 	}
 	
@@ -311,7 +308,6 @@ struct Tree{
 		}
 	 
 		exibe_galhos(&este);
-		//(T->isnil) ? "NIL\n" : 
 		printf("%s%d%s\n", (T->c ? ANSI_BG_RED : ANSI_BG_BLACK), T->k, ANSI_COLOR_RESET);
 	 
 		if (ant) ant->s = anterior;
