@@ -27,7 +27,7 @@ using namespace std;
 
 enum color {BLACK, RED};
 struct nodo{
-	nodo *p, *l, *r;
+	nodo *p, *s[2];
 	int k;
 	color c;
 };
@@ -36,14 +36,14 @@ typedef nodo* node;
 struct Tree{
 	node root, NIL;
 	
-	node menor(node T){ return (T->l != NIL ? menor(T->l) : T); }
-	node maior(node T){ return (T->r != NIL ? maior(T->r) : T); }
+	node menor(node T){ return (T->s[0] != NIL ? menor(T->s[0]) : T); }
+	node maior(node T){ return (T->s[1] != NIL ? maior(T->s[1]) : T); }
 	
 	node procura(node T, int v){
 		if(T == NIL) return NULL;
 		if(v == T->k) return T;
-		if(v < T->k) return procura(T->l, v);
-		if(v > T->k) return procura(T->r, v);
+		if(v < T->k) return procura(T->s[0], v);
+		if(v > T->k) return procura(T->s[1], v);
 		return NULL;
 	}
 	
@@ -52,39 +52,39 @@ struct Tree{
 		if(N == NULL)
 			ERR_ALLOC();
 		N->p = NIL;
-		N->l = N->r = NIL;
+		N->s[0] = N->s[1] = NIL;
 		N->k = v;
 		N->c = RED;
 		return N;
 	}
 	
 	void leftRotate(node *T, node y){
-		node x = y->r;
-		y->r = x->l;
-		if (x->l != NIL)
-			x->l->p = y;
+		node x = y->s[1];
+		y->s[1] = x->s[0];
+		if (x->s[0] != NIL)
+			x->s[0]->p = y;
 		x->p = y->p;
 		if (x->p == NIL)
 			(*T) = x;
-		else if (y == y->p->r)
-			y->p->r = x;
-		else y->p->l = x;
-		x->l = y;
+		else if (y == y->p->s[1])
+			y->p->s[1] = x;
+		else y->p->s[0] = x;
+		x->s[0] = y;
 		y->p = x;
 	}
 	
 	void rightRotate(node *T, node y){
-		node x = y->l;
-		y->l = x->r;
-		if (x->r != NIL)
-			x->r->p = y;
+		node x = y->s[0];
+		y->s[0] = x->s[1];
+		if (x->s[1] != NIL)
+			x->s[1]->p = y;
 		x->p = y->p;
 		if (x->p == NIL)
 			(*T) = x;
-		else if (y == y->p->l)
-			y->p->l = x;
-		else y->p->r = x;
-		x->r = y;
+		else if (y == y->p->s[0])
+			y->p->s[0] = x;
+		else y->p->s[1] = x;
+		x->s[1] = y;
 		y->p = x;
 	}
 	
@@ -94,10 +94,10 @@ struct Tree{
 		while (z != *T && z->p->c == RED){
 			node y;
 			// Find uncle and store uncle in y
-			if (z->p == z->p->p->l)
-				y = z->p->p->r;
+			if (z->p == z->p->p->s[0])
+				y = z->p->p->s[1];
 			else
-				y = z->p->p->l;
+				y = z->p->p->s[0];
 	 
 			// If uncle is RED, do following
 			// (i)  Change c of p and uncle as BLACK
@@ -114,7 +114,7 @@ struct Tree{
 			else{// Left-Left (LL) case, do following
 				// (i)  Swap c of p and grandparent
 				// (ii) Right Rotate Grandparent
-				if (z->p == z->p->p->l && z == z->p->l){
+				if (z->p == z->p->p->s[0] && z == z->p->s[0]){
 					color ch = z->p->c ;
 					z->p->c = z->p->p->c;
 					z->p->p->c = ch;
@@ -125,7 +125,7 @@ struct Tree{
 				// (i)  Swap c of current node  and grandparent
 				// (ii) Left Rotate Parent
 				// (iii) Right Rotate Grand Parent
-				if (z->p == z->p->p->l && z == z->p->r){
+				if (z->p == z->p->p->s[0] && z == z->p->s[1]){
 					color ch = z->c ;
 					z->c = z->p->p->c;
 					z->p->p->c = ch;
@@ -136,7 +136,7 @@ struct Tree{
 				// Right-Right (RR) case, do following
 				// (i)  Swap c of p and grandparent
 				// (ii) Left Rotate Grandparent
-				if (z->p == z->p->p->r && z == z->p->r){
+				if (z->p == z->p->p->s[1] && z == z->p->s[1]){
 					color ch = z->p->c ;
 					z->p->c = z->p->p->c;
 					z->p->p->c = ch;
@@ -147,7 +147,7 @@ struct Tree{
 				// (i)  Swap c of current node  and grandparent
 				// (ii) Right Rotate Parent
 				// (iii) Left Rotate Grand Parent
-				if (z->p == z->p->p->r && z == z->p->l){
+				if (z->p == z->p->p->s[1] && z == z->p->s[0]){
 					color ch = z->c ;
 					z->c = z->p->p->c;
 					z->p->p->c = ch;
@@ -166,19 +166,19 @@ struct Tree{
 			T->c = BLACK;
 		}else{
 			if (v < T->k) {
-				if(T->l != NIL) 
-					insere(T->l, v);
+				if(T->s[0] != NIL) 
+					insere(T->s[0], v);
 				else{
-					T->l = aloca(v);
-					T->l->p = T;
+					T->s[0] = aloca(v);
+					T->s[0]->p = T;
 				}
 			}else
 			if (T->k < v) {
-				if(T->r != NIL)
-					insere(T->r, v);
+				if(T->s[1] != NIL)
+					insere(T->s[1], v);
 				else{
-					T->r = aloca(v);
-					T->r->p = T;
+					T->s[1] = aloca(v);
+					T->s[1]->p = T;
 				}
 			}
 		}
@@ -188,45 +188,45 @@ struct Tree{
 	void prefixo(node T) {
 		if(T != NIL){
 			printf("%d", T->k);
-			if(T->l != NIL){ printf(" "); prefixo(T->l); }
-			if(T->r != NIL){ printf(" "); prefixo(T->r); }
+			if(T->s[0] != NIL){ printf(" "); prefixo(T->s[0]); }
+			if(T->s[1] != NIL){ printf(" "); prefixo(T->s[1]); }
 		}
 	}
 	  
 	void infixo(node T) {
 		if(T != NIL){
-			if(T->l != NIL){ infixo(T->l); printf(" "); }
+			if(T->s[0] != NIL){ infixo(T->s[0]); printf(" "); }
 			printf("%d", T->k);
-			if(T->r != NIL){ printf(" "); infixo(T->r); }
+			if(T->s[1] != NIL){ printf(" "); infixo(T->s[1]); }
 		}
 	}
 	 
 	void posfixo(node T) {
 		if(T != NIL){
-			if(T->l != NIL){ posfixo(T->l); printf(" "); }
-			if(T->r != NIL){ posfixo(T->r); printf(" "); }
+			if(T->s[0] != NIL){ posfixo(T->s[0]); printf(" "); }
+			if(T->s[1] != NIL){ posfixo(T->s[1]); printf(" "); }
 			printf("%d", T->k);
 		}
 	}
 
 	node retira(node T, int v) {
 		if(T == NIL) return T;
-		else if(v < T->k) T->l = retira(T->l, v);
-		else if(v > T->k) T->r = retira(T->r, v);
+		else if(v < T->k) T->s[0] = retira(T->s[0], v);
+		else if(v > T->k) T->s[1] = retira(T->s[1], v);
 		else{
-			if(T->l == NIL && T->r == NIL){ // no child
+			if(T->s[0] == NIL && T->s[1] == NIL){ // no child
 				delete T;
 				T = NIL;
 			}
-			else if(!(T->l != NIL && T->r != NIL)){ // one child
+			else if(!(T->s[0] != NIL && T->s[1] != NIL)){ // one child
 				node aux = T;
-				T = (T->l != NIL) ? T->l : T->r;
+				T = (T->s[0] != NIL) ? T->s[0] : T->s[1];
 				delete aux; 
 			}
 			else{
-				node aux = maior(T->l);
+				node aux = maior(T->s[0]);
 				T->k = aux->k;
-				T->l = retira(T->l, aux->k);
+				T->s[0] = retira(T->s[0], aux->k);
 			}
 		}
 		return T;
@@ -234,8 +234,8 @@ struct Tree{
 
 	void libera(node T){
 		if(T != NIL){
-			if(T->l != NIL) libera(T->l);
-			if(T->r != NIL) libera(T->r);
+			if(T->s[0] != NIL) libera(T->s[0]);
+			if(T->s[1] != NIL) libera(T->s[1]);
 			delete T;
 		}
 		//return T;
@@ -243,7 +243,7 @@ struct Tree{
 
 	void initialize(){ 
 		NIL = aloca(-INFTO);
-		NIL->p = NIL->l = NIL->r = NULL;
+		NIL->p = NIL->s[0] = NIL->s[1] = NULL;
 		NIL->c = BLACK;
 		root = NIL;
 	}
@@ -295,7 +295,7 @@ struct Tree{
 	 
 		galho este = { ant, "    " };
 		string anterior = este.s;
-		mostra(T->l, &este, 1);
+		mostra(T->s[0], &este, 1);
 	 
 		if (!ant)
 			este.s = "---";
@@ -313,7 +313,7 @@ struct Tree{
 		if (ant) ant->s = anterior;
 		este.s = "   |";
 	 
-		mostra(T->r, &este, 0);
+		mostra(T->s[1], &este, 0);
 		if (!ant) puts("");
 	}
 	
@@ -338,9 +338,9 @@ struct Tree{
 		printf("Key: ");
 		print_info_util(n);
 		printf("Left: ");
-		print_info_util(n->l);
+		print_info_util(n->s[0]);
 		printf("Right: ");
-		print_info_util(n->r);
+		print_info_util(n->s[1]);
 	}
 };
 
